@@ -1,0 +1,370 @@
+---
+sidebar_position: 1
+---
+
+import { ModalA } from "./../../src/components/Modals/modalA";
+import {
+  ModalParent,
+  ModalsWithAnimation,
+} from "./../../src/components/Modals/parent";
+
+<ModalParent />
+
+# Modals
+
+Modals are elevated cards that are used to communicate important information.
+
+## Simple Modal
+
+Import some dependencies
+
+```js
+"use client";
+
+import React, { useEffect, useRef } from "react";
+```
+
+Create a custom react component that takes two props: `isActive` as a prop for when to toggle the Modal on the screen and `cb` for if you have some call backs to make for some reasons.
+
+```js
+export const ModalA = ({
+  isActive,
+  cb,
+}: {
+  cb: () => void,
+  isActive: boolean,
+}) => {
+  // create a ref to access the modal on the DOM
+  const modalRef = (useRef < HTMLDivElement) | (null > null);
+
+  // use effect to be called when isActive changes for some reasons
+  useEffect(() => {
+    if (isActive) {
+      cb();
+    }
+  }, [isActive]);
+
+  return (
+    <div
+      className={`fixed right-0 top-0 h-full w-full shadow-lg shadow-indigo-500/40 bg-gray-500/10 hidden justify-center `}
+      onClick={toggleWrapper}
+      ref={modalRef}
+    >
+      <div className="bg-white w-fit h-fit py-10 px-5 m-auto">
+        <span className="cursor-pointer text-2xl" onClick={toggleModal}>
+          &times;
+        </span>
+        <h1>Modal Title 1</h1>
+        <p>Lorem ipsum dolor sit a.</p>
+        <p>Soluta ipsum</p>
+      </div>
+    </div>
+  );
+};
+```
+
+### Add features to enable toggling
+
+```js
+...
+
+export const ModalA = ({ isActive = false, cb }) => {
+ ...
+  const closeModal = () => {
+    modalRef.current.classList.remove("flex");
+    modalRef.current.classList.add("hidden");
+  };
+
+  const openModal = () => {
+    modalRef.current.classList.add("flex");
+    modalRef.current.classList.remove("hidden");
+  };
+
+  const toggleModal = () => {
+    if (getComputedStyle(modalRef.current).display == "flex") {
+      closeModal();
+      cb();
+    } else {
+      openModal();
+    }
+  };
+
+  const toggleWrapper = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.currentTarget === e.target) {
+      toggleModal();
+    }
+  };
+  ...
+};
+
+```
+
+### Complete Code
+
+```js
+"use client";
+
+import React, { useEffect, useRef } from "react";
+
+export const ModalA = ({ isActive = false, cb }) => {
+  const modalRef = (useRef < HTMLDivElement) | (null > null);
+  useEffect(() => {
+    if (isActive) {
+      openModal();
+    }
+  }, [isActive]);
+
+  const closeModal = () => {
+    modalRef.current.classList.remove("flex");
+    modalRef.current.classList.add("hidden");
+  };
+
+  const openModal = () => {
+    modalRef.current.classList.add("flex");
+    modalRef.current.classList.remove("hidden");
+  };
+
+  const toggleModal = () => {
+    if (getComputedStyle(modalRef.current).display == "flex") {
+      closeModal();
+      cb();
+    } else {
+      openModal();
+    }
+  };
+
+  const toggleWrapper = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.currentTarget === e.target) {
+      toggleModal();
+    }
+  };
+  return (
+    <div
+      className={`fixed right-0 top-0 h-full w-full shadow-lg shadow-indigo-500/40 bg-red-500/20 hidden justify-center z-[999]`}
+      onClick={toggleWrapper}
+      ref={modalRef}
+    >
+      <div className="bg-white w-fit h-fit py-10 px-5 m-auto">
+        <span className="cursor-pointer text-2xl" onClick={toggleModal}>
+          &times;
+        </span>
+        <div>
+          <h1>Header: Title</h1>
+          <p>Body: Lorem ipsum dolor sit a.</p>
+          <p>Footer: Soluta ipsum</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+### Rewrite: Reusable with Children Props.
+
+What we did previously will do the trick if you are trying to make a static modal. Usually, we want something more reusbale, we can do better by making the modal content a child prop to support reuse.
+
+```js
+export const ModalA: React.FC<React.ComponentPropsWithoutRef<'div'> & {isActive: boolean, cb: ()=> any}> = ({
+  isActive = false,
+  cb,
+  children
+}) => {
+    ...
+    ...
+  return (
+    <div
+      className={`fixed right-0 top-0 h-full w-full shadow-lg shadow-indigo-500/40 bg-red-500/20 hidden justify-center z-[999] animation-`}
+      id="modal1"
+      onClick={toggleWrapper}
+      ref={modalRef}
+    >
+
+      <div className="bg-white w-fit h-fit py-10 px-5 m-auto">
+        <span className="cursor-pointer text-2xl" onClick={toggleModal}>
+          &times;
+        </span>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+```
+
+You will use this component like this:
+
+```js
+import * as React from "react";
+import { ModalA } from "./modalA";
+
+export function ModalParent() {
+  const [isActive, setIsActive] = React.useState(false);
+  return (
+    <div>
+      <button
+        onClick={() => setIsActive((pre) => !pre)}
+        className="bg-green-200 text-green-800 border-2 border-green-800 py-1 px-4 rounded-md"
+      >
+        ModalA
+      </button>
+      <ModalA isActive={isActive} cb={() => setIsActive(false)}>
+        <div>
+          <h1>Modal Title 1</h1>
+          <p>Lorem ipsum dolor sit a.</p>
+          <p>Soluta ipsum</p>
+        </div>
+      </ModalA>
+    </div>
+  );
+}
+```
+
+## Modals with Animation
+
+<ModalsWithAnimation />
+
+To add animations to your modal, rewrite the former code to fit easy adjustments to multiple animations.
+
+```js
+//parts.tsx
+
+"use client";
+
+import React, { useEffect, useRef } from "react";
+
+export function Modal({
+  isActive = false,
+  cb,
+  onanimatein,
+  onanimateout,
+  children,
+}: React.ComponentPropsWithoutRef<"div"> & {
+  isActive: boolean,
+  cb: () => any,
+  onanimatein?: string,
+  onanimateout?: string,
+}) {
+  const modalRef = (useRef < HTMLDivElement) | (null > null);
+  useEffect(() => {
+    if (isActive) {
+      openModal();
+    }
+  }, [isActive]);
+
+  const syncAddClasses = (arr: Array<string>) => {
+    arr.forEach((classname) => modalRef.current.classList.add(classname));
+  };
+  const syncRemoveClasses = (arr: Array<string>) => {
+    arr.forEach((classname) => modalRef.current.classList.remove(classname));
+  };
+
+  const closeModal = () => {
+    syncAddClasses([onanimateout]);
+    syncRemoveClasses([onanimatein]);
+    setTimeout(() => {
+      syncRemoveClasses(["flex"]);
+      syncAddClasses(["hidden"]);
+    }, 156);
+  };
+
+  const openModal = () => {
+    syncAddClasses(["flex", onanimatein]);
+    syncRemoveClasses(["hidden", onanimateout]);
+  };
+
+  const toggleModal = () => {
+    if (getComputedStyle(modalRef.current).display == "flex") {
+      closeModal();
+      cb();
+    } else {
+      openModal();
+    }
+  };
+
+  const toggleWrapper = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.currentTarget === e.target) {
+      toggleModal();
+    }
+  };
+  return (
+    <Modal.MainWrapper ref={modalRef} toggleWrapper={toggleWrapper}>
+      <Modal.Content>
+        <Modal.CloseAction toggleModal={toggleModal} />
+        {children}
+      </Modal.Content>
+    </Modal.MainWrapper>
+  );
+}
+
+const CloseAction = ({ toggleModal }: { toggleModal: () => any }) => {
+  return (
+    <span className="cursor-pointer text-2xl" onClick={toggleModal}>
+      &times;
+    </span>
+  );
+};
+Modal.CloseAction = CloseAction;
+
+const Content = ({ children }: { children: React.ReactNode }) => (
+  <div className="bg-white w-fit h-fit py-10 px-5 m-auto">{children}</div>
+);
+Modal.Content = Content;
+
+const MainWrapper = React.forwardRef(
+  (
+    {
+      children,
+      toggleWrapper,
+    }: React.ComponentPropsWithRef<"div"> & {
+      toggleWrapper: (e: React.MouseEvent<HTMLDivElement>) => void,
+    },
+    ref: React.Ref<HTMLDivElement>
+  ) => (
+    <div
+      className={`fixed right-0 top-0 h-full w-full shadow-lg shadow-indigo-500/40 bg-red-500/20 hidden justify-center z-[999]`}
+      onClick={toggleWrapper}
+      ref={ref}
+    >
+      {children}
+    </div>
+  )
+);
+Modal.MainWrapper = MainWrapper;
+```
+
+Now all you need do, is to use this component and add animation-in and animation-out variants.
+
+```js
+import { Modal } from "./parts";
+
+export function Parent() {
+  const [isActive, setIsActive] = React.useState(false);
+  return (
+    <div>
+      <button
+        onClick={() => setIsActive2((pre) => !pre)}
+        className="bg-green-200 text-green-800 border-2 border-green-800 py-1 px-4 rounded-md"
+      >
+        ZoomIn
+      </button>
+
+      <Modal
+        isActive={isActive}
+        cb={() => setIsActive(false)}
+        onanimateout="animate-modal-zoom-out"
+        onanimatein="animate-modal-zoom-in"
+      >
+        <div>
+          <h1>Header: Title</h1>
+          <p>Body: Lorem ipsum dolor sit a.</p>
+          <p>Footer: Soluta ipsum</p>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+```
+
+## Glossary
+
+1. https://codepen.io/Coding_Journey/pen/jOOBvqR
